@@ -1,4 +1,4 @@
-Erlang Coding Standards & Guidelines
+Erlang 编码标准指引
 ====================================
 
 Suggested reading material: http://www.erlang.se/doc/programming_rules.shtml
@@ -156,11 +156,6 @@ good() -> "这行没有".
 
 *原因*: 这是提交噪音. 可以看看[长篇论据](https://programmers.stackexchange.com/questions/121555/why-is-trailing-whitespace-a-big-deal).
 
-### 语法
-
-Erlang语法很可怕, 我说得对吗? 所以你也可以充分利用它, 对吗? _对_?
-
-***
 ##### 每行100列
 > 每行最多100个字符.
 
@@ -462,13 +457,39 @@ delete_comment(PostId, CommentId) ->
   some_db:delete(comments, [{post_id, PostId}, {id, CommentId}]).
 ```
 
-*原因*: 上帝模块, 类似上帝对象, 了解过多或者负责过多的模块. 上帝模块通常是因为不断的增加功能函数演变出来的. A beautiful, to-the-point module with one job, one responsibility done well, gains a function. Then another, which does the same thing but with different parameters. 总有一天, 你会写出一个包含500多个函数并且高达6000多行代码的模块 .让模块(和功能)只做一件事情就可以很容易地探索和理解代码,从而维护它.
+*原因*: 上帝模块, 类似上帝对象, 了解过多或者负责过多的模块. 上帝模块通常是因为不断的增加功能函数演变出来的. A beautiful, to-the-point module with one job, one responsibility done well, gains a function. Then another, which does the same thing but with different parameters. 总有一天, 你会写出一个包含500多个函数并且高达6000多行代码的模块 .因此,让模块(和功能)只做一件事情就可以很容易地探索和理解代码,从而维护它.
 
 ***
-##### 简单的单元测试
-> Single responsibility applies to tests as well. When writing **unit** tests, keep them short and don't put more than 1 or 2 asserts per test
+##### 简洁的单元测试
+> 只做一件事情也可以用到测试上. 当你在写 **单元** 测试时, 请保持简短,并且每个测试处理的事情不要超过2个.
 
 *Examples*: [test_SUITE](src/test_SUITE.erl)
+
+```erlang
+bad(_Config) ->
+  ct:comment("When input is 0, it should return 0"),
+  0 = should:return(0),
+  ct:comment("When input is positive, it should return 1"),
+  1 = should:return(2),
+  ct:comment("When input is negative, it should return -1"),
+  -1 = should:return(-100),
+  {comment, ""}.
+
+good1(_Config) ->
+  ct:comment("When input is 0, it should return 0"),
+  0 = should:return(0),
+  {comment, ""}.
+
+good2(_Config) ->
+  ct:comment("When input is positive, it should return 1"),
+  1 = should:return(2),
+  {comment, ""}.
+
+good3(_Config) ->
+  ct:comment("When input is negative, it should return -1"),
+  -1 = should:return(-100),
+  {comment, ""}.
+```
 
 *原因*: Multiple tests can identify multiple errors in one run, if you put all the things you want to test into one test you'll have to fix one thing at a time until the test passes.
 
@@ -568,15 +589,46 @@ prefix_for(wayne_ents) -> <<"we">>.
 
 *原因*: 不要写面条式代码很难阅读, 理解和修改. The function callgraph for your program should strive to be a directed acyclic graph.
 
-### Syntax
+### 语法
 
-Erlang syntax is horrible amirite? So you might as well make the best of it, right? _Right_?
+Erlang语法很可怕, 我说得对吗? 所以你也可以充分利用它, 对吗? _对_?
 
 ***
 ##### 避免使用 if 表达式
 > Don't use `if`.
 
 *Examples*: [no_if](src/no_if.erl)
+
+```erlang
+bad(Connection) ->
+  {Transport, Version} = other_place:get_http_params(),
+  if
+    Transport =/= cowboy_spdy, Version =:= 'HTTP/1.1' ->
+      [{<<"connection">>, utils:atom_to_connection(Connection)}];
+    true ->
+      []
+  end.
+
+
+better(Connection) ->
+  {Transport, Version} = other_place:get_http_params(),
+  case {Transport, Version} of
+    {cowboy_spdy, 'HTTP/1.1'} ->
+      [{<<"connection">>, utils:atom_to_connection(Connection)}];
+    {_, _} ->
+      []
+  end.
+ 
+
+good(Connection) ->
+  {Transport, Version} = other_place:get_http_params(),
+  connection_headers(Transport, Version, Connection).
+  
+connection_headers(cowboy_spdy, 'HTTP/1.1', Connection) ->
+    [{<<"connection">>, utils:atom_to_connection(Connection)}];
+connection_headers(_, _, _) ->
+    [].
+```
 
 *原因*: In some circumstances `if` introduces static boolean logic in your code, reducing code flexibility. In other cases, a `case` or a function call with pattern matching in its clauses is just more declarative. For newcommers (that have learned to use `if` in other languages), Erlang's `if` can be either hard to understand or easily abused.
 
@@ -586,20 +638,73 @@ Erlang syntax is horrible amirite? So you might as well make the best of it, rig
 - [In erlang-questions](http://erlang.org/pipermail/erlang-questions/2014-September/080827.html)
 
 ***
-##### Avoid nested try...catches
+##### 避免嵌套 try...catches
 > Don't nest `try…catch` clauses
 
 *Examples*: [nested_try_catch](src/nested_try_catch.erl)
 
+```erlang
+bad() ->
+  try
+    maybe:throw(exception1),
+    try
+      maybe:throw(exception2),
+      "We are safe!"
+    catch
+      _:exception2 ->
+        "Oh, no! Exception #2"
+    end
+  catch
+    _:exception1 -> "Bummer! Exception #1"
+  end.
+
+good1() ->
+  try
+    maybe:throw(exception1),
+    maybe:throw(exception2),
+    "We are safe!"
+  catch
+    _:exception1 ->
+      "Bummer! Exception #1";
+    _:exception2 ->
+      "Oh, no! Exception #2"
+  end.
+
+good2() ->
+  try
+    maybe:throw(exception1),
+    a_function:that_deals(with, exception2),
+    "We are safe!"
+  catch
+    _:exception1 ->
+      "Bummer! Exception #1"
+  end.
+```
+
 *原因*: Nesting `try…catch` blocks defeats the whole purpose of them, which is to isolate the code that deals with error scenarios from the nice and shiny code that deals with the expected execution path.
 
-### Naming
+### 命名
 
 ***
 ##### Be consistent when naming concepts
 > Use the same variable name for the same concept everywhere (even in different modules).
 
 *Examples*: [consistency](src/consistency.erl)
+
+```erlang
+bad(UserId) -> internal_bad(UserId).
+
+internal_bad(User_Id) -> internal_bad2(User_Id).
+
+internal_bad2(Usr) -> db:get_by_id(Usr).
+
+
+good(UserId) -> internal_good(UserId).
+
+internal_good(UserId) -> internal_good2(UserId).
+
+internal_good2(UserId) -> db:get_by_id(UserId).
+```
 
 *原因*: When trying to figure out all the places where an ``OrgID`` is needed (e.g. if we want to change it from ``string`` to ``binary``), it's way easier if we can just grep for ``OrgID`` instead of having to check all possible names.
 
@@ -617,13 +722,35 @@ Erlang syntax is horrible amirite? So you might as well make the best of it, rig
 
 *Examples*: [ignored_vars](src/ignored_vars.erl)
 
+```erlang
+bad(_Number) -> 2 * _Number.
+
+good(Number) -> 2 * Number.
+```
+
 *原因*: They are **not** supposed to be used.
 
 ***
-##### Avoid boolean parameters
+##### 避免用布尔类型作为函数参数
 > Don't use boolean parameters (i.e. `true` and `false`) to control clause selection.
 
 *Examples*: [boolean_params](src/boolean_params.erl)
+
+```erlang
+bad(EdgeLength) -> bad_draw_square(EdgeLength, true).
+
+bad_draw_square(EdgeLength, true) ->
+  square:fill(square:draw(EdgeLength));
+bad_draw_square(EdgeLength, false) ->
+  square:draw(EdgeLength).
+
+good(EdgeLength) -> good_draw_square(EdgeLength, full).
+
+good_draw_square(EdgeLength, full) ->
+  square:fill(square:draw(EdgeLength));
+good_draw_square(EdgeLength, empty) ->
+  square:draw(EdgeLength).
+```
 
 *原因*: Clarity of intention and not requiring the reader to check the function definition to understand what it does.
 
@@ -633,33 +760,67 @@ Erlang syntax is horrible amirite? So you might as well make the best of it, rig
 
 *Examples*: [naming_modules](src/naming_modules)
 
+```shell
+.
+├── bad
+│   ├── house.erl
+│   └── xmpl_user.erl
+└── good
+    ├── xmpl_house.erl
+    └── xmpl_user.erl
+```
+
 *原因*: It gives coherence to your system.
 
 ***
-##### Lowercase atoms
-> Atoms should use only lowercase characters. Words in atom names should be separated with `_`. Special cases are allowed (like `'GET'`, `'POST'`, etc.) but should be properly justified.
+##### 原子(atoms)请用小写
+> Atoms should use only lowercase characters. 当一个原子含有多个单词时,单词之间用 `_` 隔开. 特殊情况可以允许用大写 (例如  `'GET'`, `'POST'`, 等等) 但是尽量还是控制在一定使用量.
 
 *Examples*: [atoms](src/atoms.erl)
+
+```erlang
+bad() -> ['BAD', alsoBad, bad_AS_well].
+
+good() -> [good, also_good, 'good@its.mail'].
+```
 
 *原因*: Adhering to one convention makes it easier not to have "duplicated" atoms all around the code. Also, not using caps or special characters reduces the need for `'` around atoms.
 
 ***
-##### Function Names
+##### 函数名
 > Function names must use only lowercase characters or digits. Words in function names must be separated with `_`.
 
 *Examples*: [function_names](src/function_names.erl)
 
+```erlang
+badFunction() -> {not_allowed, camel_case}.
+
+'BAD_FUNCTION'() -> {not_allowed, upper_case}.
+
+good_function() -> ok.
+
+base64_encode() -> ok.
+```
+
 *原因*: Function names are atoms, they should follow the same rules that apply to them.
 
 ***
-##### Variable Names
+##### 变量名
 > CamelCase must be used for variables. Don’t separate words in variables with `_`.
 
 *Examples*: [variable_names](src/variable_names.erl)
 
+```erlang
+bad(Variablename, Another_Variable_Name) ->
+  [Variablename, Another_Variable_Name].
+
+good(Variable, VariableName) ->
+  [Variable, VariableName].
+```
+
 *原因*: Adhering to one convention makes it easier not to have "duplicated" variables all around the code. Camel-case makes variable names more visually distinguishable from atoms and it matches the OTP standard.
 
-### Strings
+### 字符串
 
 ***
 ##### IOLists over string concatenation
@@ -667,9 +828,15 @@ Erlang syntax is horrible amirite? So you might as well make the best of it, rig
 
 *Examples*: [iolists](src/iolists.erl)
 
+```erlang
+bad(Param) -> "Hello " ++ binary_to_list(Param) ++ "! Have a nice day!".
+
+good(Param) -> ["Hello ", Param, "! Have a nice day!"].
+```
+
 *原因*: Performance and errors during conversion. [iolists](http://www.erlangpatterns.org/iolist.html) are just deeply nested lists of integers and binaries to represent IO data to avoid copying when concatenating strings or binaries.
 
-### Macros
+### 宏
 
 ***
 ##### No Macros
@@ -698,7 +865,7 @@ See [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erl
 
 *原因*: Copying lines of code to the console for debugging (something that happens *a lot*) becomes a really hard task if we need to manually replace all the macros.
 
-### Records
+### 记录(Records)
 
 ***
 ##### Record names
@@ -725,8 +892,8 @@ See [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erl
 *原因*: Records are used for data structure definitions. Hiding those structures aids encapsulation and abstraction. If a record structure needs to be changed and its definition is written in a .hrl file, the developer should find all the files where that .hrl and verify that his change hasn't broken anything. That's not needed if the record structure is internal to the module that manages it.
 
 ***
-##### Avoid records in specs
-> Avoid using records in your specs, use types.
+##### 在 specs 里避免出现 records
+> 在 specs 里应该尽可能用 types 代替 records.
 
 *Examples*: [record_spec](src/record_spec.erl)
 
@@ -740,7 +907,7 @@ See [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erl
 
 *原因*: Records define data structures, and one of the most important parts of that definition is the type of the constituent pieces.
 
-### Misc
+### 其它
 
 ***
 ##### Write function specs
@@ -777,8 +944,8 @@ This pattern also helps avoid bugs where different messages get confused with on
 *原因*: ``-include`` directives in included headers may lead to duplication of inclusions and/or other conflicts and it also hides things from the developer view.
 
 ***
-##### No types in include files
-> No `-type` in hrl files
+##### 在头文件里不要有类型定义
+> 在头文件里不要有 `-type` 
 
 *Examples*: [types](src/types.erl)
 
@@ -788,7 +955,7 @@ In other words, "no type definitions in header files" rule means that we will al
 Following this rule you also get the benefits that `-opaque` types provide, for instance, to dialyzer.
 
 ***
-##### Don't import
+##### 不要用 import
 > Do not use the `-import` directive
 
 *Examples*: [import](src/import.erl)
@@ -796,7 +963,7 @@ Following this rule you also get the benefits that `-opaque` types provide, for 
 *原因*: Importing functions from other modules makes the code harder to read and debug since you cannot directly distinguish local from external functions. In appropriately named functions, the module is _part_ of the function name, it gives meaning to it.
 
 ***
-##### Don't export_all
+##### 不要用 export_all
 > Do not use the `-compile(export_all)` directive
 
 *Examples*: [export_all](src/export_all.erl)
@@ -912,7 +1079,7 @@ Additionally, to an experienced Erlang developer, folds and list comprehensions 
 *原因*: It helps reducing line lengths, which is also described above
 
 ***
-##### Comment levels
+##### 注释等级
 > Module comments go with **%%%**, function comments with **%%**, and code comments with **%**.
 
 *Examples*: [comment_levels](src/comment_levels.erl)
@@ -920,7 +1087,7 @@ Additionally, to an experienced Erlang developer, folds and list comprehensions 
 *原因*: It clearly states what the comment is about, also helpful to search for specific comments, like "%% @".
 
 ***
-##### Keep functions small
+##### 保持函数精简
 > Try to write functions with a small number of expressions, and that do only one thing. **12** expressions per function except for integration tests is a good measure.
 
 *Examples*: [small_funs](src/small_funs.erl)
