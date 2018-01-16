@@ -84,6 +84,12 @@ If you find any **bugs** or have a **problem** while using this library, please 
 
 And you can check all of our open-source projects at [inaka.github.io](http://inaka.github.io)
 
+## 翻译贡献者
+
+>  本编码规范基于inaka公司的[erlang_guidelines](https://github.com/inaka/erlang_guidelines)
+
+[@feng19](https://github.com/feng19) \ [@JoeLeewell](https://github.com/Baymask) \ [@huangjialegaoan](https://github.com/huangjialegaoan) 排名不分先后
+
 ## 约定 & 规则
 
 "Things that may be used as reason to reject a Pull Request."
@@ -839,31 +845,92 @@ good(Param) -> ["Hello ", Param, "! Have a nice day!"].
 ### 宏
 
 ***
-##### No Macros
-> Don't use macros, except for very specific cases, that include
-> * Predefined ones: ``?MODULE``, ``?MODULE_STRING`` and ``?LINE``
-> * Magic numbers: ``?DEFAULT_TIMEOUT``
+##### 宏的应用场景
+> 除了包含以下使用方式的情况外，不要使用宏
+> * 预定义部分: ``?MODULE``, ``?MODULE_STRING`` and ``?LINE``
+> * 魔术数字: ``?DEFAULT_TIMEOUT``
 
 *Examples*: [macros](src/macros.erl)
+```erlang
+-module(macros).
 
-*原因*: Macros make code harder to debug. If you're trying to use them to avoid repeating the same block of code over and over, you can use functions for that.
-See [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erlang-1d3f10d377f#.xc9b4bsl9) by [@erszcz](https://github.com/erszcz).
+-define(OTHER_MODULE, other_module).
+-define(LOG_ERROR(Error),
+        error_logger:error_msg(
+          "~p:~p >> Error: ~p~n\tStack: ~p",
+          [?MODULE, ?LINE, Error, erlang:get_stacktrace()])).
+
+-define(HTTP_CREATED, 201).
+
+-export([bad/0, good/0]).
+
+bad() ->
+  try
+    ?OTHER_MODULE:some_function(that, may, fail, 201)
+  catch
+    _:Error ->
+      ?LOG_ERROR(Error)
+  end.
+
+good() ->
+  try
+    other_module:some_function(that, may, fail, ?HTTP_CREATED)
+  catch
+    _:Error ->
+      log_error(?LINE, Error)
+  end.
+
+log_error(Line, Error) ->
+  error_logger:error_msg(
+    "~p:~p >> Error: ~p~n\tStack: ~p",
+    [?MODULE, Line, Error, erlang:get_stacktrace()]).
+```
+
+*原因*: 宏的使用不利于调试工作的进行. 如果你尝试用它们来避免重复的代码块，可以使用以下函数去实现。
+具体看 [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erlang-1d3f10d377f#.xc9b4bsl9) by [@erszcz](https://github.com/erszcz).
 
 ***
-##### Uppercase macros
-> Macros should be named in ALL_UPPER_CASE:
+##### 宏名要大写
+> 宏名应以大写字母命名:
 
 *Examples*: [macro_names](src/macro_names.erl)
+```erlang
+-module(macro_names).
 
-*原因*: It makes it easier not to duplicate macro names, to find them using grep, etc.
+-define(bad, 1).
+-define(BADMACRONAME, 2).
+-define(Bad_Macro_Name, 3).
+-define(Bad_L33t_M@Cr0, 4).
+
+-define(GOOD, 5).
+-define(GOOD_MACRO_NAME, 6).
+```
+
+*原因*: 这样做可以区分开普通变量和宏,在使用`grep`等工具查找这个宏时不会出现重复宏名,让查找变得更加容易等好处
 
 ***
-##### No module or function name macros
-> Don't use macros for module or function names
+##### 模块或函数名不能用宏命名
+> 模块或函数名不能用宏命名
 
 *Examples*: [macro_mod_names](src/macro_mod_names.erl)
+```erlang
+-module(macro_mod_names).
 
-*原因*: Copying lines of code to the console for debugging (something that happens *a lot*) becomes a really hard task if we need to manually replace all the macros.
+-define(SERVER, ?MODULE). % Oh, god! Why??
+-define(TM, another_module).
+
+-export([bad/1, good/1]).
+
+bad(Arg) ->
+  Parsed = gen_server:call(?SERVER, {parse, Arg}),
+  ?TM:handle(Parsed).
+
+good(Arg) ->
+  Parsed = gen_server:call(?MODULE, {parse, Arg}),
+  another_module:handle(Parsed).
+```
+
+*原因*: 当你需要复制这些代码到控制台调试时(这种情况出现的频率很高),你会发现这是一件很艰难的事情,因为我们必须手动地去替换掉所有的宏.
 
 ### 记录(Records)
 
@@ -1048,62 +1115,223 @@ handling.
 * [GitHub Official Recommendation](https://help.github.com/articles/which-remote-url-should-i-use/)
 * [GitHub Protocol Comparison](https://gist.github.com/grawity/4392747#file-github-protocol-comparison-md)
 
-## Suggestions & Great Ideas
-
-Things that should be considered when writing code, but do not cause a PR rejection, or are too vague to consistently enforce.
+## 好的建议和方法
+当我们写代码时，应该考虑以下一些注意事项，但是不要引发PR拒绝，或者含糊到无法连贯执行。
 
 ***
-##### Favor higher-order functions over manual use of recursion
-> Occasionally recursion is the best way to implement a function, but often a fold or a list comprehension will yield safer, more comprehensible code.
+##### 优先使用高级函数而不是手写的递归方法
+> 有时实现函数最好的方式是编写递归函数, 但是比较经常的写法是使用 fold函数 或者 列表推导式 会更加安全和可读性更高.
 
 *Examples*: [alternatives to recursion](src/recursion.erl)
 
-*原因*: Manually writing a recursive function is error-prone, and mistakes can be costly. In the wrong circumstances, a buggy recursive function can miss its base case, spiral out of control, and take down an entire node. This tends to counteract one of the main benefits of Erlang, where an error in a single process does not normally cause the entire node to crash.
+```erlang
+-module(recursion).
 
-Additionally, to an experienced Erlang developer, folds and list comprehensions are much easier to understand than complex recursive functions. Such contstructs behave predictably: they always perform an action for each element in a list. A recursive function may work similarly, but it often requires careful scrutiny to verify what path the control flow will actually take through the code in practice.
+-export([recurse/1, fold/1, map/1, comprehension/1]).
+
+%%
+%% 例子:
+%% 不同的方法实现大写字符串
+%%
+
+%% 差的: 使用不必要的人工手写递归
+recurse(S) ->
+    lists:reverse(recurse(S, [])).
+
+recurse([], Acc) ->
+    Acc;
+recurse([H | T], Acc) ->
+    NewAcc = [string:to_upper(H) | Acc],
+    recurse(T, NewAcc).
+
+%% 好的: 使用fold函数实现同样的结果,更加安全，更少的代码行数
+fold(S) ->
+    Result = lists:foldl(fun fold_fun/2, [], S),
+    lists:reverse(Result).
+
+fold_fun(C, Acc) ->
+    [string:to_upper(C) | Acc].
+
+%% 更佳的: 使用map函数代替fold函数,更简单的实现方法，因为在这种情况下，fold函数大材小用了。
+map(S) ->
+    lists:map(fun string:to_upper/1, S).
+
+%% 最好的: 在这种情况下，列表推导式最简单的实现方法（假设忽略string:to_upper也能直接对string使用的事实）
+comprehension(S) ->
+    [string:to_upper(C) || C <- S].
+```
+
+*原因*: 人工手写的递归容易出错, 并且代价昂贵。在有错误的情况下，一个错误的递归函数会失去它的基本功能，如螺旋般地失去控制，导致整个erlang节点挂掉，抵消了erlang最主要的好处之一： 进程的死亡不会导致整个节点的崩溃。
+
+另外，对于一个有经验的erlang开发者而言，folds 和 列表推导式比复杂的递归函数更容易理解。显而易见的是:它们能为列表中的每个元素执行操作，递归也许同样能够实现，但是它经常需要仔细的检查，以验证控制流在实践中实际执行的路径。
 
 ***
-##### CamelCase over Under_Score
-> Symbol naming: Use variables in CamelCase and atoms, function and module names with underscores.
+##### 驼峰式命名 ，下划线命名
+> 符号命名：使用驼峰式命名变量，原子，函数和模块则使用下划线命名
+> *Examples*: [camel_case](src/camel_case.erl)
+```erlang
+-module(camel_case).
 
-*Examples*: [camel_case](src/camel_case.erl)
+-export([bad/0, good/0]).
+%% 差的
+bad() ->
+  Variable_Name = moduleName:functionName(atomConstant),
+  another_ModuleName:another_Function_Name(Variable_Name).
+%% 好的
+good() ->
+  VariableName = module_name:function_name(atom_constant),
+  another_module_name:another_function_name(VariableName).
+```
 
-*原因*: It helps a lot with the next issue in this list ;)
+*小节结论*:本节对下面一个问题很有帮助。
 
 ***
-##### Prefer shorter (but still meaningful) variable names
-> As long as it's easy to read and understand, keep variable names short
+##### 更短 (但仍保持有意义的) 的变量名称 
+
+> 只要易于阅读和理解，保持变量名称简短。
 
 *Examples*: [var_names](src/var_names.erl)
+```erlang
+-module(var_names).
 
-*原因*: It helps reducing line lengths, which is also described above
+-export([bad/1, good/1]).
+%% 差的
+bad(OrganizationToken) ->
+  OID = organization:get_id(OrganizationToken),
+  OID.
+%% 好的
+good(OrgToken) ->
+  OrgID = organization:get_id(OrgToken),
+  OrgID.
+```
+
+*小节结论*: 它有助于减少每行的长度，这也是上面描述的。
 
 ***
 ##### 注释等级
-> Module comments go with **%%%**, function comments with **%%**, and code comments with **%**.
+
+> 模块注释用 **%%%**, 函数注释用 **%%**, 代码注释用 **%**.
 
 *Examples*: [comment_levels](src/comment_levels.erl)
 
-*原因*: It clearly states what the comment is about, also helpful to search for specific comments, like "%% @".
+```erlang
+% 这样的注释坏到家了
+%%% @doc 这样的注释不错
+-module(comment_levels).
+
+-export([bad/0, good/0]).
+
+% @doc 这样的注释不好
+%%% @doc 这的注释也不好
+bad() ->
+  R = 1 + 2, %%% 这样的注释不好(not good)
+  R. %% 这样的注释依然不好(bad again)
+
+%% @doc 这种注释我喜欢
+good() ->
+  % 这个注释得到国际注释协会的一致认可
+  % 还有 Chuck Norris的认可
+  R = 1 + 2,
+  R. % This comment (megusta)  这个注释我喜欢（megusta 西班牙语：我喜欢）
+```
+*小节结论*: 清晰的陈述了注释是什么, 并且寻找特定的注释比如："%% @"等 是非常有用的。
 
 ***
 ##### 保持函数精简
-> Try to write functions with a small number of expressions, and that do only one thing. **12** expressions per function except for integration tests is a good measure.
+> 只做一件事，尝试着用少量表达式来写函数. 除了集成测试外，每个函数理想的表达式数量是不超过**12**个.
 
 *Examples*: [small_funs](src/small_funs.erl)
 
-*原因*: From 3 different sources:
-- Small functions aid readability and composeability. Readability aids maintainability. This cannot be stressed enough. The smaller your code, the easier it is to fix and change.
-- A small function allows one to see its purpose clearly, so that you need to only understand the small subset of operations it performs, which makes it very simple to verify it works correctly.
-- These are all compeling reasons:
-  + a function should do one thing, if it's too large you are likely to be doing work better suited for multiple functions
-  + clarity, it's easier to see what a function does when it's short and concise
-  + reuse, keeping them short means you can use them later for something else (specially true for Erlang)
-  + screen size: you want to be able to see the whole function if you want to connect via ssh to a server for whatever reason
+```erlang
+-module(small_funs).
 
-*Notes*:
+-export([bad/2, good/2]).
+%% 差的
+bad(UserEmail, Message) ->
+  User =
+    case users:find_by_email(UserEmail) of
+      notfound ->
+        users:new_with_email(UserEmail);
+      FoundUser ->
+        FoundUser
+    end,
+  
+  EscapedMessage = message_utils:escape(Message),
+  CleanMessage = bad_word_checker:clean(EscapedMessage),
 
-This guideline, together with **[Avoid deep nesting](#avoid-deep-nesting)** and **[More, smaller functions over case expressions](#more-smaller-functions-over-case-expressions)**, can be well followed by structuring your functions as follows:
+  db:store_message(User, CleanMessage),
+  
+  DeviceIds = user:get_devices(User),
+  lists:foreach(
+    fun(DeviceId) ->
+      case devices:get_device(DeviceId) of
+        notfound -> ok;
+        Device ->
+          case device:get_push_info(Device) of
+            {apns, Token} ->
+              ApnsMsg = apns:build_message(CleanMessage),
+              apns:send_msg(Token, ApnsMsg);
+            {gcm, Token} ->
+              GcmMsg = gcm:new_message(CleanMessage),
+              gcm:send_message(Token, GcmMsg);
+            _ -> ok
+          end
+      end
+    end, DeviceIds).
+%% 好的
+good(UserEmail, Message) ->
+  User = find_or_create_user(UserEmail),
+  CleanMessage = clean_message(Message),
+
+  db:store_message(User, CleanMessage),
+
+  deliver_message(User, CleanMessage).
+
+
+find_or_create_user(UserEmail) ->
+  case users:find_by_email(UserEmail) of
+    notfound ->
+      users:new_with_email(UserEmail);
+    FoundUser ->
+      FoundUser
+  end.
+
+clean_message(Message) ->
+  EscapedMessage = message_utils:escape(Message),
+  bad_word_checker:clean(EscapedMessage).
+
+deliver_message(User, Message) ->
+  DeviceIds = user:get_devices(User),
+  Devices =
+    [devices:get_device(DeviceId) || DeviceId <- DeviceIds],
+  lists:foreach(
+    fun(notfound) -> ok;
+       (Device) -> send_message(device:get_push_info(Device), Message)
+    end, Devices).
+
+send_message({apns, Token}, Message) ->
+  ApnsMsg = apns:build_message(Message),
+  apns:send_msg(Token, ApnsMsg);
+send_message({gcm, Token}, Message) ->
+  GcmMsg = gcm:new_message(Message),
+  gcm:send_message(Token, GcmMsg);
+send_message(_, _) -> ok.
+```
+
+*小结*: 从3个方面：
+- 简洁的函数有助于是可读性和组装性。可读性又有助于维护。这一点强调的足够多了，你的代码越简洁，就越容易修复和更改。
+- 简洁的函数目的清晰明了，因此您只需要了解执行操作的其中一小部分的子集，这使得验证它是否正确地工作变得非常简单。
+
+- 强有力的论据：
+  + 一个函数只干一件事情，如果函数太冗长你可能更适合改为以多个函数实现
+  + 很明显，简单的，简洁的函数更容易理解
+  + 重用性，保持函数的精简有利于后续使用（特别是erlang）
+  + 屏幕尺寸：出于如何原因如果通过ssh连接服务器或者，你希望能够看到整个函数
+
+
+*提示*:
+
+本指导, 联合 **[避免多层嵌套](#avoid-deep-nesting)** and  **[在case表达式中使用更多更小的函数](#more-smaller-functions-over-case-expressions)** 两个指导, 可以很好的利用来构建函数，如下所示：
 
 ```erlang
 some_fun(#state{name=foo} = State) ->
@@ -1116,46 +1344,86 @@ some_fun(#state{name=bar} = State) ->
 continue_some_fun(State) ->
   ...,
   ok.
-
 ```
 
-Remember:
+记住这些:
 
-- There is no cost for a tail call like that.
-- This pattern is efficient, compact, clear.
-- It "resets" indentation so the code doesn't wander off the right edge of the screen.
+- 像这样在函数结尾调用函数是没有代价的
+- 这种模式高效、紧凑、清晰
+- 这样重置缩进，因此代码不会游离于屏幕右边边缘地带
 
-Most importantly:
-
-- It's easier to test because the functions delineate the testing hinge points.
-- It gives more surface for tracing, so one can get very specific about where the computation goes off the rails. Nested cases are opaque at runtime.
+最重要的:
+- 测试起来简单，因为函数描绘了测试节点.
+- 提供更多的跟踪切入面，因此我们能够找到哪里的代码计算运行导致脱轨，而嵌套case写法在运行时是不可跟踪的。
 
 ***
-##### Use behaviours.
-> Encapsulate reusable code in behaviors.
+##### 使用行为模式.
+
+> 封装可重用的代码在行为模式里
 
 *Examples*: [behavior](src/behavior.erl)
+```erlang
+-module(behavior).
 
-*原因*: It's the OTP way ;)
+-type element() :: binary().
+-type id() :: pos_integer().
+
+-export_type([element/0, id/0]).
+
+-callback store(element()) -> id().
+-callback retrieve(id()) -> notfound | element().
+-callback delete(id()) -> ok.
+-callback count() -> non_neg_integer().
+```
+
+*小结*: 这是OTP推进的方式
 
 ***
-##### When programming defensively, do so on client side
-Do validations on the outmost layers of your code.
+##### 在发起的一方做防御编程
+
+> 在你的代码的最外层进行校验
 
 *Examples*: [validations](src/validations.erl)
+```erlang
+-module(validations).
 
-*原因*: One aspect of choosing where want you to crash is how you design your API: A function that checks the input before calling the gen_server behind it will avoid a full roundtrip to the gen_server and maybe even a gen_server crash.
-do_it(Pid, X) when is_integer(X) -> gen_server:call(Pid, {do_it, X}).
-If you design this way, the caller crashes if the arg is wrong.
-If you don't tighten up the function head, the gen_server will crash.
+-export([bad/1, good/1]).
+
+bad(X) ->
+  gen_server:call(?MODULE, {add, X}).
+
+good(X) when is_integer(X) ->
+  gen_server:call(?MODULE, {add, X});
+good(X) ->
+  throw({invalid_input, X}).
+```
+
+*小结*:一方面来讲你希望程序在哪里崩溃取决于你的API设计：在调用gen_server之前检查输入的参数将避免gen_server的整个往返调用，甚至错误的输入可能导致gen_server进程崩溃。
+`do_it(Pid, X) when is_integer(X) -> gen_server:call(Pid, {do_it, X}).`如果你这样设计的话，参数错误时，调用方进程将崩溃。但是如果你不做这个函数头部匹配检查的话(指带`when is_integer(X)`)，将会导致gen_server进程崩溃。
 
 ***
-##### Avoid unnecesary calls to length/1
-> Lots of use cases of length/1 can be replaced by pattern matching, this is specially true when checking if the list has at least one element.
+##### 避免不必要调用length/1 
+> 许多用`length/1`作为`case`条件都可以被模式匹配替代掉，尤其在检查列表是否至少有一个元素时很管用。
+
 
 *Examples*: [pattern matching](src/pattern_matching.erl)
+```erlang
+-module(pattern_matching).
 
-*原因*: Pattern matching is one of the core aspects of Erlang and as such it's both performant and readable. Pattern matching is also more flexible so changes to the logic get simpler.
+-export([bad/1, good/1]).
+
+bad(L) ->
+  case length(L) of
+    0 -> error;
+    _ -> ok
+  end.
+
+good([]) ->
+  error;
+good(_L) ->
+  ok.
+```
+*小结*:模式匹配是`Erlang`的核心内容之一，并且它的性能和可读性都很好。模式匹配也更加灵活，因此它使得代码逻辑变得更加简单。
 
 ***
 ##### Move stuff to independent applications
