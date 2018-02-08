@@ -88,7 +88,7 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
 
 >  本编码规范基于inaka公司的[erlang_guidelines](https://github.com/inaka/erlang_guidelines)
 
-[@feng19](https://github.com/feng19) \ [@JoeLeewell](https://github.com/Baymask) \ [@huangjialegaoan](https://github.com/huangjialegaoan) 排名不分先后
+[@feng19](https://github.com/feng19) \ [@JoeLeewell](https://github.com/Baymask) \ [@huangjialegaoan](https://github.com/huangjialegaoan) \ [@hjh](https://github.com/hjh2010) 排名不分先后
 
 ## 约定 & 规则
 
@@ -692,8 +692,8 @@ good2() ->
 ### 命名
 
 ***
-##### Be consistent when naming concepts
-> Use the same variable name for the same concept everywhere (even in different modules).
+##### 在命名概念时保持一致
+> 对于相同的概念，在任何地方都使用相同的变量名 (即使在不同的模块当中).
 
 *Examples*: [consistency](src/consistency.erl)
 
@@ -712,7 +712,7 @@ internal_good(UserId) -> internal_good2(UserId).
 internal_good2(UserId) -> db:get_by_id(UserId).
 ```
 
-*原因*: When trying to figure out all the places where an ``OrgID`` is needed (e.g. if we want to change it from ``string`` to ``binary``), it's way easier if we can just grep for ``OrgID`` instead of having to check all possible names.
+*原因*: 当要找出所有用到``OrgID`` 的代码 (例如 我们想把变量从 ``string`` 转为 ``binary``), 我们只要搜索名为 ``OrgID``的变量，而不需要查找所有有可能关于 ``OrgID``的命名变量.
 
 ***
 ##### Explicit state should be explicitly named
@@ -780,7 +780,7 @@ good_draw_square(EdgeLength, empty) ->
 
 ***
 ##### 原子(atoms)请用小写
-> Atoms should use only lowercase characters. 当一个原子含有多个单词时,单词之间用 `_` 隔开. 特殊情况可以允许用大写 (例如  `'GET'`, `'POST'`, 等等) 但是尽量还是控制在一定使用量.
+> 原子命名只能使用小写字母. 当一个原子含有多个单词时,单词之间用 `_` 隔开. 特殊情况可以允许用大写 (例如  `'GET'`, `'POST'`, 等等) 但是尽量还是控制在一定使用量.
 
 *Examples*: [atoms](src/atoms.erl)
 
@@ -935,44 +935,132 @@ good(Arg) ->
 ### 记录(Records)
 
 ***
-##### Record names
-> Record names must use only lowercase characters. Words in record names must be separated with `_`. Same rule applies to record field names
+##### 记录(`record`) 命名
+> 记录(`record`)命名只能使用小写字母. 单词之间用 `_`分隔. 这个规则同样适用于`record`的字段名
 
 *Examples*: [record_names](src/record_names.erl)
 
-*原因*: Record and field names are atoms, they should follow the same rules that apply to them.
+```erlang
+-module(record_names).
+
+-export([records/0]).
+
+-record(badName, {}).
+-record(bad_field_name, {badFieldName :: any()}).
+-record('UPPERCASE', {'THIS_IS_BAD' :: any()}).
+
+-record(good_name, {good_field_name :: any()}).
+
+records() -> [#badName{}, #bad_field_name{}, #'UPPERCASE'{}, #good_name{}].
+```
+
+*原因*: `record`和其字段名都是原子(`atom`), 因此跟原子的命名规则是一样的.
 
 ***
-##### Records go first
-> Records that are used within a module should be defined before any function bodies.
+##### 记录(`record`)先行
+> 记录(`record`)在模块(Module)中使用的函数体之前先定义
 
 *Examples*: [record_placement](src/record_placement.erl)
 
-*原因*: Records are used to define data types that will most likely be used by multiple functions on the module, so their definition can not be tied to just one. Also, since records will be associated to types, it's a good practice to place them in code in a similar way as the documentation does (and edoc puts types at the beginning of each module documentation)
+```erlang
+-module(record_placement).
+
+-export([good/0, bad/0]).
+
+-record(good, { this_record   :: any()
+              , appears       :: any()
+              , before        :: any()
+              , the_functions :: any()}).
+
+good() -> [#good{}].
+
+-record(bad,  { this_record :: any()
+              , appears     :: any()
+              , below       :: any()
+              , a_function  :: any()}).
+
+bad() -> [#bad{}].
+```
+
+*原因*: 记录(`record`)用于定义数据类型，这些数据类型很可能被模块中的多个函数所使用, 所以他们的定义不能只局限于一个. 此外，由于记录将与类型相关联，所以将它们以类似于文档的方式放在代码中是一种很好的做法 (把定义放在模块顶部).
 
 ***
-##### Don't share your records
-> Records should not be shared among multiple modules. If you need to share _objects_ that are represented as records, use opaque exported types and provide adequate accesor functions in your module.
+##### 不要共享记录(`record`)
+> 记录(`record`)不应该在多个模块之间共享. 如果你需要共享用record定义的对象, 使用不透明的导出类型，并在模块中提供转换函数接口.
 
 *Examples*: [record_sharing](src/record_sharing.erl)
 
-*原因*: Records are used for data structure definitions. Hiding those structures aids encapsulation and abstraction. If a record structure needs to be changed and its definition is written in a .hrl file, the developer should find all the files where that .hrl and verify that his change hasn't broken anything. That's not needed if the record structure is internal to the module that manages it.
+```erlang
+-module(record_sharing).
+
+-include("record_sharing.hrl").
+
+-export([bad/0, good/0, good_field/1, good_field/2]).
+
+-record(good, {good_field :: string()}).
+-opaque good() :: #good{}.
+-export_type([good/0]).
+
+-spec good() -> good().
+good() -> #good{}.
+
+-spec good_field(good()) -> string().
+good_field(#good{} = Good) -> Good#good.good_field.
+
+-spec good_field(good(), string()) -> good().
+good_field(#good{} = Good, Value) -> Good#good{good_field = Value}.
+
+-spec bad() -> #bad{}.
+bad() -> #bad{}.
+```
+
+*原因*: 记录(`record`)用于数据结构定义，隐藏这些结构有助于封装和抽象. 如果一个记录结构需要更改，它的定义在一个`.hrl`文件中，开发人员就需要找到所有引用该`.hrl`的文件，确认记录的改变并没有破坏任何已有的功能. 如果记录结构只是在它自己的模块的内部使用，那么就不需要做上述检查修改工作了.
 
 ***
-##### 在 specs 里避免出现 records
-> 在 specs 里应该尽可能用 types 代替 records.
+##### 在 specs 里避免出现记录(`record`)
+> 在 specs 里应该尽可能用 `types` 代替 记录(`records`).
 
 *Examples*: [record_spec](src/record_spec.erl)
 
-*原因*: Types can be exported, which aids documentation and, using ``opaque`` types it also helps with encapsulation and abstraction.
+```erlang
+-module(record_spec).
+
+-record(state, {field1:: any(), field2:: any()}).
+
+-opaque state() :: #state{}.
+
+-export_type([state/0]).
+
+-export([bad/1, good/1]).
+
+-spec bad(#state{}) -> {any(), #state{}}.
+bad(State) -> {State#state.field1, State}.
+
+-spec good(state()) -> {any(), state()}.
+good(State) -> {State#state.field1, State}.
+```
+
+*原因*: 类型可以导出使用,同时也有助于文档化, 使用 ``opaque`` 可以对记录进行封装和抽象.
 
 ***
-#####  Types in records
-> Always add type definitions to your record fields
+#####  记录(`record`)的类型(`Types`)
+> 保持给记录(`record`)的每个字段添加类型定义的习惯
 
 *Examples*: [record_types](src/record_types.erl)
 
-*原因*: Records define data structures, and one of the most important parts of that definition is the type of the constituent pieces.
+```erlang
+-module(record_types).
+
+-export([records/0]).
+
+-record(bad, {no_type}).
+
+-record(good, {with_type :: string()}).
+
+records() -> [#bad{}, #good{}].
+```
+
+*原因*: 记录(`record`)定义的是数据结构, 而其中最重要的部分之一就是记录组成部分的类型定义.
 
 ### 其它
 
