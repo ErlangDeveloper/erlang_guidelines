@@ -6,73 +6,74 @@ Suggested reading material: http://www.erlang.se/doc/programming_rules.shtml
 ***
 
 Table of Contents:
-* [Contact Us](#Contact-Us)
-* [Conventions & Rules](#conventions--rules)
-  * [Source Code Layout](#source-code-layout)
-    * [Spaces over tabs](#spaces-over-tabs)
-    * [Use your spacebar](#use-your-spacebar)
-    * [No Trailing Whitespace](#no-trailing-whitespace)
-    * [100 column per line](#100-column-per-line)
-    * [Maintain existing style](#maintain-existing-style)
-    * [Avoid deep nesting](#avoid-deep-nesting)
-    * [More, smaller functions over case expressions](#more-smaller-functions-over-case-expressions)
-    * [Group functions logically](#group-functions-logically)
-    * [Get your types together](#get-your-types-together)
-    * [No God modules](#no-god-modules)
-    * [Simple unit tests](#simple-unit-tests)
-    * [Honor DRY](#honor-dry)
-    * [Avoid dynamic calls](#avoid-dynamic-calls)
-    * [Group modules in subdirectories by functionality](#group-modules-in-subdirectories-by-functionality)
-    * [Don't write spaghetti code](#dont-write-spaghetti-code)
-  * [Syntax](#syntax)
-    * [Avoid if expressions](#avoid-if-expressions)
-    * [Avoid nested try...catches](#avoid-nested-try-catches)
-  * [Naming](#naming)
-    * [Be consistent when naming](#be-consistent-when-naming-concepts)
-    * [Explicit state should be explicitly named](#explicit-state-should-be-explicitly-named)
-    * [Don't use _Ignored variables](#dont-use-_ignored-variables)
-    * [Avoid boolean parameters](#avoid-boolean-parameters)
-    * [Stick to one convention for naming modules](#stick-to-one-convention-for-naming-modules)
-    * [Lowercase atoms](#lowercase-atoms)
-    * [Function Names](#function-names)
-    * [Variable Names](#variable-names)
-  * [Strings](#strings)
-    * [IOLists over string concatenation](#iolists-over-string-concatenation)
-  * [Macros](#macros)
-    * [No Macros](#no-macros)
-    * [Uppercase Macros](#uppercase-macros)
-    * [No module or function name macros](#no-module-or-function-name-macros)
-  + [Records](#records)
-    * [Record names](#record-names)
-    * [Records go first](#records-go-first)
-    * [Don't share your records](#dont-share-your-records)
-    * [Avoid records in specs](#avoid-records-in-specs)
-    * [Types in records](#types-in-records)
-  * [Misc](#misc)
-    * [Write function specs](#write-function-specs)
-    * [Use -callback attributes over behaviour_info/1](use--callback-attributes-over-behaviour_info1)
-    * [Use atoms or tagged tuples for messages](#use-atoms-or-tagged-tuples-for-messages)
-    * [No nested header inclusion](#no-nested-header-inclusion)
-    * [No types in include files](#no-types-in-include-files)
-    * [Don't import](#dont-import)
-    * [Don't export_all](#dont-export_all)
-    * [Encapsulate OTP server APIs](#encapsulate-otp-server-apis)
-    * [No debug calls](#no-debug-calls)
-    * [Don't use case catch](#dont-use-case-catch)
-  * [Tools](#tools)
-    * [Lock your dependencies](#lock-your-dependencies)
-    * [Loud errors](#loud-errors)
-    * [Properly use logging levels](#properly-use-logging-levels)
-    * [Prefer the https protocol when specifying dependency locations](#prefer-the-https-protocol-over-others-when-specifying-dependency-urls)
-* [Suggestions & Great Ideas](#suggestions--great-ideas)
-  * [Favor higher-order functions over manual use of recursion](#favor-higher-order-functions-over-manual-use-of-recursion)
-  * [CamelCase over Under_Score](#camelcase-over-under_score)
-  * [Prefer shorter (but still meaningful) variable names](#prefer-shorter-but-still-meaningful-variable-names)
-  * [Comment levels](#comment-levels)
-  * [Keep functions small](#keep-functions-small)
-  * [Use behaviours](#use-behaviours)
-  * [When programming defensively, do so on client side](#when-programming-defensively-do-so-on-client-side)
-  * [Avoid unnecesary calls to length/1](#avoid-unnecesary-calls-to-length1)
+* [Contact Us](#contact-us)
+* [翻译贡献者](#翻译贡献者)
+* [约定 &amp; 规则](#约定--规则)
+   * [源码布局](#源码布局)
+      * [用空格代替制表符(tab)](#用空格代替制表符tab)
+      * [使用你的空格键](#使用你的空格键)
+      * [行尾不要留空格](#行尾不要留空格)
+      * [每行100列](#每行100列)
+      * [保持现有风格](#保持现有风格)
+      * [避免多层嵌套](#避免多层嵌套)
+      * [更多, 小函数比 case 表达式好用](#更多-小函数比-case-表达式好用)
+      * [函数按逻辑功能分组](#函数按逻辑功能分组)
+      * [集中你的 types](#集中你的-types)
+      * [不要上帝模块](#不要上帝模块)
+      * [简洁的单元测试](#简洁的单元测试)
+      * [Honor DRY](#honor-dry)
+      * [避免动态调用](#避免动态调用)
+      * [使用文件夹将功能性相关的模块分组](#使用文件夹将功能性相关的模块分组)
+      * [不要写面条式代码](#不要写面条式代码)
+   * [语法](#语法)
+      * [避免使用 if 表达式](#避免使用-if-表达式)
+      * [避免嵌套 try...catches](#避免嵌套-trycatches)
+   * [命名](#命名)
+      * [在命名概念时保持一致](#在命名概念时保持一致)
+      * [Explicit state should be explicitly named](#explicit-state-should-be-explicitly-named)
+      * [Don't use _Ignored variables](#dont-use-_ignored-variables)
+      * [避免用布尔类型作为函数参数](#避免用布尔类型作为函数参数)
+      * [Stick to one convention for naming modules](#stick-to-one-convention-for-naming-modules)
+      * [原子(atoms)请用小写](#原子atoms请用小写)
+      * [函数名](#函数名)
+      * [变量名](#变量名)
+   * [字符串](#字符串)
+      * [IOLists over string concatenation](#iolists-over-string-concatenation)
+   * [宏](#宏)
+      * [宏的应用场景](#宏的应用场景)
+      * [宏名要大写](#宏名要大写)
+      * [模块或函数名不能用宏命名](#模块或函数名不能用宏命名)
+   * [记录(Records)](#记录records)
+      * [记录(record) 命名](#记录record-命名)
+      * [记录(record)先行](#记录record先行)
+      * [不要共享记录(record)](#不要共享记录record)
+      * [在 specs 里避免出现记录(record)](#在-specs-里避免出现记录record)
+      * [记录(record)的类型(Types)](#记录record的类型types)
+   * [其它](#其它)
+      * [Write function specs](#write-function-specs)
+      * [Use -callback attributes over behaviour_info/1](#use--callback-attributes-over-behaviour_info1)
+      * [Use atoms or tagged tuples for messages](#use-atoms-or-tagged-tuples-for-messages)
+      * [No nested header inclusion](#no-nested-header-inclusion)
+      * [在头文件里不要有类型定义](#在头文件里不要有类型定义)
+      * [不要用 import](#不要用-import)
+      * [不要用 export_all](#不要用-export_all)
+      * [Encapsulate OTP server APIs](#encapsulate-otp-server-apis)
+      * [No debug calls](#no-debug-calls)
+      * [Don't Use Case Catch](#dont-use-case-catch)
+   * [工具](#工具)
+      * [锁定你的依赖](#锁定你的依赖)
+      * [Loud errors](#loud-errors)
+      * [Properly use logging levels](#properly-use-logging-levels)
+      * [Prefer the https protocol over others when specifying dependency URLs](#prefer-the-https-protocol-over-others-when-specifying-dependency-urls)
+* [好的建议和方法](#好的建议和方法)
+  * [优先使用高级函数而不是手写的递归方法](#优先使用高级函数而不是手写的递归方法)
+  * [驼峰式命名,下划线命名](#驼峰式命名-下划线命名)
+  * [更短 (但仍保持有意义的) 的变量名称](#更短-但仍保持有意义的-的变量名称)
+  * [注释等级](#注释等级)
+  * [保持函数精简](#保持函数精简)
+  * [使用行为模式.](#使用行为模式)
+  * [在发起的一方做防御编程](#在发起的一方做防御编程)
+  * [避免不必要调用length/1](#避免不必要调用length1)
   * [Move stuff to independent applications](#move-stuff-to-independent-applications)
   * [Use the facade pattern on libraries](#use-the-facade-pattern-on-libraries)
   * [Types in exported functions](#types-in-exported-functions)
@@ -97,7 +98,7 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
 ### 源码布局
 
 ***
-##### 用空格代替制表符(tab)
+#### 用空格代替制表符(tab)
 > 用空格代替制表符(tab),使用两个空格符作为缩进.
 
 *Examples*: [indent](src/indent.erl)
@@ -133,7 +134,7 @@ good() ->
 *原因*: 这并不意味着允许代码中存在多层嵌套的结构.如果代码足够干净,2个空格就足够了,代码看起来更加简洁,同时在同一行中也能容纳更多的字符.
 
 ***
-##### 使用你的空格键
+#### 使用你的空格键
 > 使用空格来分割开运算符和逗号.
 
 *Examples*: [spaces](src/spaces.erl)
@@ -149,7 +150,7 @@ good(_Hey, _Now, _It) -> ["works " ++ "again, " | [hooray]].
 *原因*: 同上,主要是为了代码易于读写,等等.
 
 ***
-##### 行尾不要留空格
+#### 行尾不要留空格
 > 检查你的没一行代码的最后,不要有空格.
 
 *Examples*: [trailing_whitespace](src/trailing_whitespace.erl)
@@ -162,7 +163,7 @@ good() -> "这行没有".
 
 *原因*: 这是提交噪音. 可以看看[长篇论据](https://programmers.stackexchange.com/questions/121555/why-is-trailing-whitespace-a-big-deal).
 
-##### 每行100列
+#### 每行100列
 > 每行最多100个字符.
 
 *Examples*: [col_width](src/col_width.erl)
@@ -183,7 +184,7 @@ good([Foo, Bar | Rest], Arg2) ->
 100个字符的限制不仅仅让每一行保持简短, 另外也能让你可以毫无压力地在标准的手提电脑屏幕上并排同时打开两个文件, 或者三个 1080p 显示器上.
 
 ***
-##### 保持现有风格
+#### 保持现有风格
 > 当你维护别人的模块时, 请坚持按前人的编码风格样式维护. 如果项目有整体的风格样式, 那么在编写新的模块是也要坚持按项目的整体风格进行.
 
 *Examples*: [existing_style](src/existing_style.erl)
@@ -215,7 +216,7 @@ good() ->
 
 ***
 
-##### 避免多层嵌套
+#### 避免多层嵌套
 > 尽量不要出现超过三个层级嵌套的代码样式
 
 *Examples*: [nesting](src/nesting.erl)
@@ -261,7 +262,7 @@ good() ->
 与之相关: [More, smaller functions over case expressions](#more-smaller-functions-over-case-expressions).
 
 ***
-##### 更多, 小函数比 case 表达式好用
+#### 更多, 小函数比 case 表达式好用
 > 使用模式匹配的函数子句代替 case 表达式. 特别是当 case 在:
 > - 函数的最上层(下面代码第一个bad函数)
 > - 巨大的
@@ -301,7 +302,7 @@ good() ->
 *原因:* 一般而已,函数体中的一个case代表某种决定,同时函数应尽可能的简单. 如果决策结果的每个分支作为一个函数子句而不是一个case子句来实现,同时函数子句的函数名也可以让代码容易读懂. 换言之, 这个 case 在此扮演的是 '匿名函数', 除非它们在高阶函数的上下文中被使用,而只是模糊的含义.
 
 ***
-##### 函数按逻辑功能分组
+#### 函数按逻辑功能分组
 > 始终保持区分导出函数和未导出的函数, 并将导出的放在前面, 除非还有其他方法更加有助于可读性和代码发现的.
 
 *Examples*: [grouping_functions](src/grouping_functions)
@@ -377,7 +378,7 @@ private3(Atom) -> Atom.
 *原因*: 好的代码结构易于读/理解/修改.
 
 ***
-##### 集中你的 types
+#### 集中你的 types
 > 将 types 都放在文件开头的地方
 
 *Examples*: [type_placement](src/type_placement.erl)
@@ -397,7 +398,7 @@ bad() -> 2.
 *原因*: Types 定义的数据结构极有可能被用于多个函数,所以他们的定义不能只与其中一个有关. 另外将他们在代码中放在一起并像文档一样展示他们就像 edoc 也是将 types 放在每个文档的开头一样.
 
 ***
-##### 不要上帝模块
+#### 不要上帝模块
 > 不要让你的系统使用上帝模块 (模块中包含了很多函数 和/或 函数与函数之间处理的事情并不相关)
 
 *Examples*: [god](src/god.erl)
@@ -466,7 +467,7 @@ delete_comment(PostId, CommentId) ->
 *原因*: 上帝模块, 类似上帝对象, 了解过多或者负责过多的模块. 上帝模块通常是因为不断的增加功能函数演变出来的. A beautiful, to-the-point module with one job, one responsibility done well, gains a function. Then another, which does the same thing but with different parameters. 总有一天, 你会写出一个包含500多个函数并且高达6000多行代码的模块 .因此,让模块(和功能)只做一件事情就可以很容易地探索和理解代码,从而维护它.
 
 ***
-##### 简洁的单元测试
+#### 简洁的单元测试
 > 只做一件事情也可以用到测试上. 当你在写 **单元** 测试时, 请保持简短,并且每个测试处理的事情不要超过2个.
 
 *Examples*: [test_SUITE](src/test_SUITE.erl)
@@ -500,7 +501,7 @@ good3(_Config) ->
 *原因*: Multiple tests can identify multiple errors in one run, if you put all the things you want to test into one test you'll have to fix one thing at a time until the test passes.
 
 ***
-##### Honor DRY
+#### Honor DRY
 > Don't write the same code in many places, use functions and variables for that
 
 *Examples*: [dry](src/dry.erl)
@@ -528,7 +529,7 @@ good() ->
 *原因*: This convention is specifically put in this list (instead of treat it as a [great idea](#great-ideas)) so that reviewers can reject PRs that include the same code several times or PRs that re-implement something that they know it's already done somewhere else.
 
 ***
-##### 避免动态调用
+#### 避免动态调用
 > If there is no specific need for it, don't use dynamic function calling.
 
 *Examples*: [dyn_calls](src/dyn_calls.erl)
@@ -551,7 +552,7 @@ good(Arg) ->
 *原因*: Dynamic calls can't be checked by [``xref``](http://erlang.org/doc/apps/tools/xref_chapter.html), one of the most useful tools in the Erlang world. ``xref`` is a cross reference checking/observing tool.
 
 ***
-##### 使用文件夹将功能性相关的模块分组
+#### 使用文件夹将功能性相关的模块分组
 > When having lots of modules, use subdirectories for them, named with a nice descriptive name for what that "package" does.
 
 *原因*: That way it's easier to find what you need and determine what a certain module does.
@@ -559,7 +560,7 @@ good(Arg) ->
 *Note*: Remember to properly configure your ``Emakefile`` to handle that, if you use it.
 
 ***
-##### 不要写面条式代码
+#### 不要写面条式代码
 
 > 不要写面条式代码(一个带 case 表达式的列表推导式, 或者用 begin/end 包含的代码块, 再嵌套结构...)
 
@@ -600,7 +601,7 @@ prefix_for(wayne_ents) -> <<"we">>.
 Erlang语法很可怕, 我说得对吗? 所以你也可以充分利用它, 对吗? _对_?
 
 ***
-##### 避免使用 if 表达式
+#### 避免使用 if 表达式
 > Don't use `if`.
 
 *Examples*: [no_if](src/no_if.erl)
@@ -644,7 +645,7 @@ connection_headers(_, _, _) ->
 - [In erlang-questions](http://erlang.org/pipermail/erlang-questions/2014-September/080827.html)
 
 ***
-##### 避免嵌套 try...catches
+#### 避免嵌套 try...catches
 > Don't nest `try…catch` clauses
 
 *Examples*: [nested_try_catch](src/nested_try_catch.erl)
@@ -692,7 +693,7 @@ good2() ->
 ### 命名
 
 ***
-##### 在命名概念时保持一致
+#### 在命名概念时保持一致
 > 对于相同的概念，在任何地方都使用相同的变量名 (即使在不同的模块当中).
 
 *Examples*: [consistency](src/consistency.erl)
@@ -715,7 +716,7 @@ internal_good2(UserId) -> db:get_by_id(UserId).
 *原因*: 当要找出所有用到``OrgID`` 的代码 (例如 我们想把变量从 ``string`` 转为 ``binary``), 我们只要搜索名为 ``OrgID``的变量，而不需要查找所有有可能关于 ``OrgID``的命名变量.
 
 ***
-##### Explicit state should be explicitly named
+#### Explicit state should be explicitly named
 > Name your state records ``#state`` and use ``-type state():: #state{}`` in all your OTP modules.
 
 *Examples*: [state](src/state)
@@ -723,7 +724,7 @@ internal_good2(UserId) -> db:get_by_id(UserId).
 *原因*: OTP behaviours implementations usually require a state, and if it always have the same name it makes it more clearly recognizable. Defining a type for it, helps _dialyzer_ detect leaks (where an internal type as the state is used outside of the module).
 
 ***
-##### Don't use _Ignored variables
+#### Don't use _Ignored variables
 > Variables beginning with _ are still variables, and are matched and bound, the _ just keeps the compiler from warning when you don't use them. If you add the _ to a variable's name, don't use it.
 
 *Examples*: [ignored_vars](src/ignored_vars.erl)
@@ -737,7 +738,7 @@ good(Number) -> 2 * Number.
 *原因*: They are **not** supposed to be used.
 
 ***
-##### 避免用布尔类型作为函数参数
+#### 避免用布尔类型作为函数参数
 > Don't use boolean parameters (i.e. `true` and `false`) to control clause selection.
 
 *Examples*: [boolean_params](src/boolean_params.erl)
@@ -761,7 +762,7 @@ good_draw_square(EdgeLength, empty) ->
 *原因*: Clarity of intention and not requiring the reader to check the function definition to understand what it does.
 
 ***
-##### Stick to one convention for naming modules
+#### Stick to one convention for naming modules
 > Stick to one convention when naming modules (i.e: ik_something vs iksomething vs something).
 
 *Examples*: [naming_modules](src/naming_modules)
@@ -779,7 +780,7 @@ good_draw_square(EdgeLength, empty) ->
 *原因*: It gives coherence to your system.
 
 ***
-##### 原子(atoms)请用小写
+#### 原子(atoms)请用小写
 > 原子命名只能使用小写字母. 当一个原子含有多个单词时,单词之间用 `_` 隔开. 特殊情况可以允许用大写 (例如  `'GET'`, `'POST'`, 等等) 但是尽量还是控制在一定使用量.
 
 *Examples*: [atoms](src/atoms.erl)
@@ -793,7 +794,7 @@ good() -> [good, also_good, 'good@its.mail'].
 *原因*: Adhering to one convention makes it easier not to have "duplicated" atoms all around the code. Also, not using caps or special characters reduces the need for `'` around atoms.
 
 ***
-##### 函数名
+#### 函数名
 > Function names must use only lowercase characters or digits. Words in function names must be separated with `_`.
 
 *Examples*: [function_names](src/function_names.erl)
@@ -811,7 +812,7 @@ base64_encode() -> ok.
 *原因*: Function names are atoms, they should follow the same rules that apply to them.
 
 ***
-##### 变量名
+#### 变量名
 > CamelCase must be used for variables. Don’t separate words in variables with `_`.
 
 *Examples*: [variable_names](src/variable_names.erl)
@@ -829,7 +830,7 @@ good(Variable, VariableName) ->
 ### 字符串
 
 ***
-##### IOLists over string concatenation
+#### IOLists over string concatenation
 > Use iolists instead of string concatenation whenever possible
 
 *Examples*: [iolists](src/iolists.erl)
@@ -845,7 +846,7 @@ good(Param) -> ["Hello ", Param, "! Have a nice day!"].
 ### 宏
 
 ***
-##### 宏的应用场景
+#### 宏的应用场景
 > 除了包含以下使用方式的情况外，不要使用宏
 > * 预定义部分: ``?MODULE``, ``?MODULE_STRING`` and ``?LINE``
 > * 魔术数字: ``?DEFAULT_TIMEOUT``
@@ -890,7 +891,7 @@ log_error(Line, Error) ->
 具体看 [related blog post](https://medium.com/@erszcz/when-not-to-use-macros-in-erlang-1d3f10d377f#.xc9b4bsl9) by [@erszcz](https://github.com/erszcz).
 
 ***
-##### 宏名要大写
+#### 宏名要大写
 > 宏名应以大写字母命名:
 
 *Examples*: [macro_names](src/macro_names.erl)
@@ -909,7 +910,7 @@ log_error(Line, Error) ->
 *原因*: 这样做可以区分开普通变量和宏,在使用`grep`等工具查找这个宏时不会出现重复宏名,让查找变得更加容易等好处
 
 ***
-##### 模块或函数名不能用宏命名
+#### 模块或函数名不能用宏命名
 > 模块或函数名不能用宏命名
 
 *Examples*: [macro_mod_names](src/macro_mod_names.erl)
@@ -935,7 +936,7 @@ good(Arg) ->
 ### 记录(Records)
 
 ***
-##### 记录(`record`) 命名
+#### 记录(`record`) 命名
 > 记录(`record`)命名只能使用小写字母. 单词之间用 `_`分隔. 这个规则同样适用于`record`的字段名
 
 *Examples*: [record_names](src/record_names.erl)
@@ -957,7 +958,7 @@ records() -> [#badName{}, #bad_field_name{}, #'UPPERCASE'{}, #good_name{}].
 *原因*: `record`和其字段名都是原子(`atom`), 因此跟原子的命名规则是一样的.
 
 ***
-##### 记录(`record`)先行
+#### 记录(`record`)先行
 > 记录(`record`)在模块(Module)中使用的函数体之前先定义
 
 *Examples*: [record_placement](src/record_placement.erl)
@@ -985,7 +986,7 @@ bad() -> [#bad{}].
 *原因*: 记录(`record`)用于定义数据类型，这些数据类型很可能被模块中的多个函数所使用, 所以他们的定义不能只局限于一个. 此外，由于记录将与类型相关联，所以将它们以类似于文档的方式放在代码中是一种很好的做法 (把定义放在模块顶部).
 
 ***
-##### 不要共享记录(`record`)
+#### 不要共享记录(`record`)
 > 记录(`record`)不应该在多个模块之间共享. 如果你需要共享用record定义的对象, 使用不透明的导出类型，并在模块中提供转换函数接口.
 
 *Examples*: [record_sharing](src/record_sharing.erl)
@@ -1017,7 +1018,7 @@ bad() -> #bad{}.
 *原因*: 记录(`record`)用于数据结构定义，隐藏这些结构有助于封装和抽象. 如果一个记录结构需要更改，它的定义在一个`.hrl`文件中，开发人员就需要找到所有引用该`.hrl`的文件，确认记录的改变并没有破坏任何已有的功能. 如果记录结构只是在它自己的模块的内部使用，那么就不需要做上述检查修改工作了.
 
 ***
-##### 在 specs 里避免出现记录(`record`)
+#### 在 specs 里避免出现记录(`record`)
 > 在 specs 里应该尽可能用 `types` 代替 记录(`records`).
 
 *Examples*: [record_spec](src/record_spec.erl)
@@ -1043,7 +1044,7 @@ good(State) -> {State#state.field1, State}.
 *原因*: 类型可以导出使用,同时也有助于文档化, 使用 ``opaque`` 可以对记录进行封装和抽象.
 
 ***
-#####  记录(`record`)的类型(`Types`)
+####  记录(`record`)的类型(`Types`)
 > 保持给记录(`record`)的每个字段添加类型定义的习惯
 
 *Examples*: [record_types](src/record_types.erl)
@@ -1065,7 +1066,7 @@ records() -> [#bad{}, #good{}].
 ### 其它
 
 ***
-##### Write function specs
+#### Write function specs
 > Write the **-spec**'s for your exported fun's, and for unexported fun's when it adds real value for documentation purposes. Define as many types as needed.
 
 *Examples*: [specs](src/specs.erl)
@@ -1073,7 +1074,7 @@ records() -> [#bad{}, #good{}].
 *原因*: Dialyzer output is complicated as is, and it is improved with good type names. In general, having semantically loaded type names for arguments makes reasoning about possible type failures easier, as well as the function's purpose.
 
 ***
-##### Use -callback attributes over behaviour_info/1.
+#### Use -callback attributes over behaviour_info/1.
 > Unless you know your project will be compiled with R14 or lower, use ``-callback`` instead of ``behavior_info/1`` for your behavior definitions.
 
 *Examples*: [callbacks](src/callbacks)
@@ -1081,7 +1082,7 @@ records() -> [#bad{}, #good{}].
 *原因*: Avoid deprecated functionality
 
 ***
-##### Use atoms or tagged tuples for messages
+#### Use atoms or tagged tuples for messages
 > When sending a message between processes, you should typically either send a single, human-readable atom, or a tuple with a human-readable atom placed in element 1. This includes messages being sent via ``gen_server:call`` and the like.
 
 *Examples*: [message-formatting](src/message_formatting.erl)
@@ -1091,7 +1092,7 @@ records() -> [#bad{}, #good{}].
 This pattern also helps avoid bugs where different messages get confused with one another, or where messages get sent to the wrong recipient; it's much easier to find the source of an unexpected message if it looks like ``{set_foobar_worker_pid, <0.312.0>}`` than if you just find a bare pid in your mailbox.
 
 ***
-##### No nested header inclusion
+#### No nested header inclusion
 > When having many _nested_ "include files", use -ifndef(HEADER_FILE_HRL) .... -endif so they can be included in any order without conflicts.
 
 *Examples*: [nested](include/nested.hrl)
@@ -1099,7 +1100,7 @@ This pattern also helps avoid bugs where different messages get confused with on
 *原因*: ``-include`` directives in included headers may lead to duplication of inclusions and/or other conflicts and it also hides things from the developer view.
 
 ***
-##### 在头文件里不要有类型定义
+#### 在头文件里不要有类型定义
 > 在头文件里不要有 `-type` 
 
 *Examples*: [types](src/types.erl)
@@ -1110,7 +1111,7 @@ In other words, "no type definitions in header files" rule means that we will al
 Following this rule you also get the benefits that `-opaque` types provide, for instance, to dialyzer.
 
 ***
-##### 不要用 import
+#### 不要用 import
 > Do not use the `-import` directive
 
 *Examples*: [import](src/import.erl)
@@ -1118,7 +1119,7 @@ Following this rule you also get the benefits that `-opaque` types provide, for 
 *原因*: Importing functions from other modules makes the code harder to read and debug since you cannot directly distinguish local from external functions. In appropriately named functions, the module is _part_ of the function name, it gives meaning to it.
 
 ***
-##### 不要用 export_all
+#### 不要用 export_all
 > Do not use the `-compile(export_all)` directive
 
 *Examples*: [export_all](src/export_all.erl)
@@ -1128,7 +1129,7 @@ Following this rule you also get the benefits that `-opaque` types provide, for 
 ***
 
 ***
-##### Encapsulate OTP server APIs
+#### Encapsulate OTP server APIs
 > Never do raw ``gen_server`` calls across module boundaries; the call should be encapsulated in an API function in the same module that implements the corresponding ``handle_call`` function. The same goes for other such OTP constructs (``gen_server`` casts, ``gen_fsm`` events, etc).
 
 *Examples*: [otp_encapsulation](src/otp_encapsulation.erl)
@@ -1140,7 +1141,7 @@ We can also change the underlying message format without disturbing any code out
 With good encapsulation, you can even do things like convert a ``gen_server`` to a ``gen_fsm`` without any code changes beyond just the one module.
 
 ***
-##### No debug calls
+#### No debug calls
 > Unless your project is meant to be run as an escript, there should be no `io:format` nor `ct:pal` calls in your production code (i.e. in the modules inside the `src` folder). Same rule applies for `lager` or `error_logger` calls if they're used just for debugging purposes during test stages.
 
 *Examples*: [debug_calls](src/debug_calls.erl)
@@ -1148,7 +1149,7 @@ With good encapsulation, you can even do things like convert a ``gen_server`` to
 *原因*: Leaving unnecessary logs on production code impacts performance. It increases the processing time for the functions you're debugging and also consumes disk space if the logs are written to a file (as they usually are). Besides, more often than not the log messages are only understood in the context of the test or debugging round in which they were created, therefore the become useless pretty fast.
 
 ***
-##### Don't Use Case Catch
+#### Don't Use Case Catch
 > Don't capture errors with `case catch`, use `try ... of ... catch` instead.
 
 *Examples*: [case-catch](src/case_catch.erl)
@@ -1161,7 +1162,7 @@ handling.
 ### 工具
 
 ***
-##### 锁定你的依赖
+#### 锁定你的依赖
 > 当你使用 rebar.config 或者 Erlang.mk 工具的时候, 请给依赖制定 tag 或者 commit, 而不是分支.
 
 *Examples*:
@@ -1171,7 +1172,7 @@ handling.
 *原因*: You don't want to be suddenly affected by a change in one of your dependencies. Once you've found the right version for you, stick to it until you *need* to change.
 
 ***
-##### Loud errors
+#### Loud errors
 > Don't let errors and exceptions go unlogged. Even when you handle them, write a log line with the stack trace.
 
 *Examples*: [loud_errors](src/loud_errors.erl)
@@ -1179,7 +1180,7 @@ handling.
 *原因*: The idea is that somebody watching the logs has enough info to understand what's happening.
 
 ***
-##### Properly use logging levels
+#### Properly use logging levels
 > When using lager, use the different logging levels with the following meanings:
 
 *Meanings*:
@@ -1192,7 +1193,7 @@ handling.
   * ``alert``: _There is no rule on when to use this level_
   * ``emergency``: _There is no rule on when to use this level_
 
-##### Prefer the https protocol over others when specifying dependency URLs
+#### Prefer the https protocol over others when specifying dependency URLs
 > When specifying dependencies in erlang.mk Makefiles or rebar.config, prefer using the https protocol to download the dependency repository.
 
 *Examples*: [makefile example](src/dependency_protocol/dep_protocol.makefile) [rebar example](src/dependency_protocol/dep_protocol.config)
@@ -1207,7 +1208,7 @@ handling.
 当我们写代码时，应该考虑以下一些注意事项，但是不要引发PR拒绝，或者含糊到无法连贯执行。
 
 ***
-##### 优先使用高级函数而不是手写的递归方法
+### 优先使用高级函数而不是手写的递归方法
 > 有时实现函数最好的方式是编写递归函数, 但是比较经常的写法是使用 fold函数 或者 列表推导式 会更加安全和可读性更高.
 
 *Examples*: [alternatives to recursion](src/recursion.erl)
@@ -1254,7 +1255,7 @@ comprehension(S) ->
 另外，对于一个有经验的erlang开发者而言，folds 和 列表推导式比复杂的递归函数更容易理解。显而易见的是:它们能为列表中的每个元素执行操作，递归也许同样能够实现，但是它经常需要仔细的检查，以验证控制流在实践中实际执行的路径。
 
 ***
-##### 驼峰式命名 ，下划线命名
+### 驼峰式命名,下划线命名
 > 符号命名：使用驼峰式命名变量，原子，函数和模块则使用下划线命名
 > *Examples*: [camel_case](src/camel_case.erl)
 ```erlang
@@ -1274,7 +1275,7 @@ good() ->
 *小节结论*:本节对下面一个问题很有帮助。
 
 ***
-##### 更短 (但仍保持有意义的) 的变量名称 
+### 更短 (但仍保持有意义的) 的变量名称 
 
 > 只要易于阅读和理解，保持变量名称简短。
 
@@ -1296,7 +1297,7 @@ good(OrgToken) ->
 *小节结论*: 它有助于减少每行的长度，这也是上面描述的。
 
 ***
-##### 注释等级
+### 注释等级
 
 > 模块注释用 **%%%**, 函数注释用 **%%**, 代码注释用 **%**.
 
@@ -1325,7 +1326,7 @@ good() ->
 *小节结论*: 清晰的陈述了注释是什么, 并且寻找特定的注释比如："%% @"等 是非常有用的。
 
 ***
-##### 保持函数精简
+### 保持函数精简
 > 只做一件事，尝试着用少量表达式来写函数. 除了集成测试外，每个函数理想的表达式数量是不超过**12**个.
 
 *Examples*: [small_funs](src/small_funs.erl)
@@ -1445,7 +1446,7 @@ continue_some_fun(State) ->
 - 提供更多的跟踪切入面，因此我们能够找到哪里的代码计算运行导致脱轨，而嵌套case写法在运行时是不可跟踪的。
 
 ***
-##### 使用行为模式.
+### 使用行为模式.
 
 > 封装可重用的代码在行为模式里
 
@@ -1467,7 +1468,7 @@ continue_some_fun(State) ->
 *小结*: 这是OTP推进的方式
 
 ***
-##### 在发起的一方做防御编程
+### 在发起的一方做防御编程
 
 > 在你的代码的最外层进行校验
 
@@ -1490,7 +1491,7 @@ good(X) ->
 `do_it(Pid, X) when is_integer(X) -> gen_server:call(Pid, {do_it, X}).`如果你这样设计的话，参数错误时，调用方进程将崩溃。但是如果你不做这个函数头部匹配检查的话(指带`when is_integer(X)`)，将会导致gen_server进程崩溃。
 
 ***
-##### 避免不必要调用length/1 
+### 避免不必要调用length/1 
 > 许多用`length/1`作为`case`条件都可以被模式匹配替代掉，尤其在检查列表是否至少有一个元素时很管用。
 
 
@@ -1514,7 +1515,7 @@ good(_L) ->
 *小结*:模式匹配是`Erlang`的核心内容之一，并且它的性能和可读性都很好。模式匹配也更加灵活，因此它使得代码逻辑变得更加简单。
 
 ***
-##### Move stuff to independent applications
+### Move stuff to independent applications
 > When you identify a block of functionality that is self-contained (it may be several modules or just a big one) and actually independent of the main purpose of your application, place that in a separate application. And consider open-sourcing it.
 
 *原因*: It's easier to share among apps. If open-sourced, you're sharing it with the community and you get the benefits of the community being involved in it.
@@ -1522,7 +1523,7 @@ good(_L) ->
 *Note*: Do **not** create highly specific libraries that are too coupled with the project you're working on. Use this rule for libraries that will likely be reused in other projects.
 
 ***
-##### Use the facade pattern on libraries
+### Use the facade pattern on libraries
 > [The facade pattern](http://en.wikipedia.org/wiki/Facade_pattern) is great to simplify library usage and serves as a form of self-documentation.
 
 *Examples*: [kafkerl](https://github.com/inaka/kafkerl/blob/master/src/kafkerl.erl)
@@ -1531,7 +1532,7 @@ good(_L) ->
 This greatly reduces the learning curve of the library and therefore makes it more tempting to use.
 
 ***
-##### Types in exported functions
+### Types in exported functions
 > Custom data types used in exported functions should be defined with Erlang type declarations and exported from the module
 
 *Examples*: [data_types](src/data_types.erl)
@@ -1539,7 +1540,7 @@ This greatly reduces the learning curve of the library and therefore makes it mo
 *原因*: It helps with function documentation and, when using opaque types, we ensure encapsulation.
 
 ***
-##### Separate responsibilities in sumo_db
+### Separate responsibilities in sumo_db
 > When using sumo_db you should separate the responsibilities clearly, creating for each entity:
 > - one module (usually called MODELs) to describe the entity and allow administrating instances of the model in memory
 > - one module (usually called MODEL_repo) to handle the various operations that require business logic relating to the entity
