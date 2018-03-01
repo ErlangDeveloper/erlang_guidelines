@@ -1,7 +1,7 @@
 Erlang 编码标准指引
 ====================================
 
-Suggested reading material: http://www.erlang.se/doc/programming_rules.shtml
+参考材料: http://www.erlang.se/doc/programming_rules.shtml
 
 ***
 
@@ -89,7 +89,12 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
 
 >  本编码规范基于inaka公司的[erlang_guidelines](https://github.com/inaka/erlang_guidelines)
 
-[@feng19](https://github.com/feng19) \ [@JoeLeewell](https://github.com/Baymask) \ [@huangjialegaoan](https://github.com/huangjialegaoan) \ [@hjh](https://github.com/hjh2010) 排名不分先后
+[@feng19](https://github.com/feng19) \ [@JoeLeewell](https://github.com/Baymask) \ [@huangjialegaoan](https://github.com/huangjialegaoan) \ [@hjh](https://github.com/hjh2010) \ [@Naupio](https://github.com/Naupio) 排名不分先后
+
+## 翻译规则
+- 所有翻译的标点符号都使用半角中文标点符号。
+- 数字\英文和中文文字之间用空格隔开。
+- 可以使用意译，不必一句一句的翻译。
 
 ## 约定 & 规则
 
@@ -502,7 +507,7 @@ good3(_Config) ->
 
 ***
 #### Honor DRY
-> Don't write the same code in many places, use functions and variables for that
+> 不要在多个地方使用相同的代码，请用函数或者变量去代替。  
 
 *Examples*: [dry](src/dry.erl)
 
@@ -526,7 +531,7 @@ good() ->
   end.
 ```
 
-*原因*: This convention is specifically put in this list (instead of treat it as a [great idea](#great-ideas)) so that reviewers can reject PRs that include the same code several times or PRs that re-implement something that they know it's already done somewhere else.
+*原因*: 这是一条特别的规约，因为这样子审查人员就可以拒绝接受那些好几个地方都包含相同代码的提交（PRs）了，或者接受那些在某个地方已完成的可复用新实现。 
 
 ***
 #### 避免动态调用
